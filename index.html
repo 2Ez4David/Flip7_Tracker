@@ -58,40 +58,47 @@
         const { useState, useEffect, useRef, useMemo } = React;
 
         // --- Icon Handling für Standalone HTML ---
-        // Da wir keine Imports nutzen können, mappen wir die Lucide-Icons manuell
+        // Wir nutzen die globale 'lucide' Variable.
+        // WICHTIG: Die Namen müssen exakt mit den Keys in lucide.icons übereinstimmen (PascalCase).
         const LucideIcon = ({ name, size = 24, className = "" }) => {
             const ref = useRef(null);
+            
             useEffect(() => {
-                if (ref.current && lucide && lucide.icons[name]) {
-                    const iconElement = lucide.createElement(lucide.icons[name]);
+                if (ref.current && window.lucide && window.lucide.icons && window.lucide.icons[name]) {
+                    const iconDef = window.lucide.icons[name];
+                    const iconElement = window.lucide.createElement(iconDef);
+                    
                     iconElement.setAttribute('width', size);
                     iconElement.setAttribute('height', size);
+                    
                     // Klassen zusammenführen
                     const existingClass = iconElement.getAttribute('class') || '';
                     iconElement.setAttribute('class', `${existingClass} ${className}`.trim());
                     
                     ref.current.innerHTML = '';
                     ref.current.appendChild(iconElement);
+                } else if (ref.current && (!window.lucide || !window.lucide.icons[name])) {
+                    console.warn(`Icon "${name}" not found in lucide library.`);
                 }
             }, [name, size, className]);
 
             return <span ref={ref} className="inline-flex items-center justify-center" style={{ width: size, height: size }} />;
         };
 
-        // Icon Mapping (ersetzt die imports)
-        const Trophy = (p) => <LucideIcon name="trophy" {...p} />;
-        const Plus = (p) => <LucideIcon name="plus" {...p} />;
-        const Trash2 = (p) => <LucideIcon name="trash2" {...p} />;
-        const RotateCcw = (p) => <LucideIcon name="rotateCcw" {...p} />;
-        const Check = (p) => <LucideIcon name="check" {...p} />;
-        const X = (p) => <LucideIcon name="x" {...p} />;
-        const History = (p) => <LucideIcon name="history" {...p} />;
-        const Settings = (p) => <LucideIcon name="settings" {...p} />;
-        const Play = (p) => <LucideIcon name="play" {...p} />;
-        const LogOut = (p) => <LucideIcon name="logOut" {...p} />;
-        const Volume2 = (p) => <LucideIcon name="volume2" {...p} />;
-        const Snowflake = (p) => <LucideIcon name="snowflake" {...p} />;
-        const Heart = (p) => <LucideIcon name="heart" {...p} />;
+        // Icon Mapping (Korrigiert auf PascalCase)
+        const Trophy = (p) => <LucideIcon name="Trophy" {...p} />;
+        const Plus = (p) => <LucideIcon name="Plus" {...p} />;
+        const Trash2 = (p) => <LucideIcon name="Trash2" {...p} />;
+        const RotateCcw = (p) => <LucideIcon name="RotateCcw" {...p} />;
+        const Check = (p) => <LucideIcon name="Check" {...p} />;
+        const X = (p) => <LucideIcon name="X" {...p} />;
+        const History = (p) => <LucideIcon name="History" {...p} />;
+        const Settings = (p) => <LucideIcon name="Settings" {...p} />;
+        const Play = (p) => <LucideIcon name="Play" {...p} />;
+        const LogOut = (p) => <LucideIcon name="LogOut" {...p} />;
+        const Volume2 = (p) => <LucideIcon name="Volume2" {...p} />;
+        const Snowflake = (p) => <LucideIcon name="Snowflake" {...p} />;
+        const Heart = (p) => <LucideIcon name="Heart" {...p} />;
 
         // --- Config ---
         const WINNER_SOUND_URL = "https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3"; 
