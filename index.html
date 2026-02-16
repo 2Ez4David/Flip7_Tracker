@@ -61,6 +61,7 @@
                     buttonPrimary: 'bg-blue-600 hover:bg-blue-500 text-white shadow-blue-900/20',
                     accent: 'text-emerald-400',
                     cardLeader: 'border-yellow-500/50 shadow-yellow-900/20',
+                    trophy: 'from-yellow-400 to-orange-500',
                     modalOverlay: 'bg-black/80',
                 }
             },
@@ -78,6 +79,7 @@
                     buttonPrimary: 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-200',
                     accent: 'text-blue-600',
                     cardLeader: 'border-yellow-400 shadow-yellow-200',
+                    trophy: 'from-yellow-400 to-amber-500',
                     modalOverlay: 'bg-slate-900/40',
                 }
             },
@@ -95,6 +97,7 @@
                     buttonPrimary: 'bg-emerald-700 hover:bg-emerald-600 text-white shadow-emerald-900/30',
                     accent: 'text-amber-400',
                     cardLeader: 'border-amber-500/50 shadow-amber-900/20',
+                    trophy: 'from-amber-400 to-orange-600',
                     modalOverlay: 'bg-black/80',
                 }
             },
@@ -112,6 +115,7 @@
                     buttonPrimary: 'bg-fuchsia-600 hover:bg-fuchsia-500 text-white shadow-[0_0_15px_rgba(192,38,211,0.5)]',
                     accent: 'text-cyan-400',
                     cardLeader: 'border-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.3)]',
+                    trophy: 'from-cyan-400 to-blue-500',
                     modalOverlay: 'bg-black/90',
                 }
             }
@@ -221,7 +225,7 @@
             const { theme } = useContext(ThemeContext);
             const [players, setPlayers] = useState(['Spieler 1', 'Spieler 2']);
             const [newName, setNewName] = useState('');
-            const [targetScore, setTargetScore] = useState('501'); // String statt Number für leeres Feld
+            const [targetScore, setTargetScore] = useState('501');
 
             const addPlayer = (e) => {
                 e.preventDefault();
@@ -303,14 +307,12 @@
 
         const ScoreInput = ({ player, onClose, onSave }) => {
             const { theme } = useContext(ThemeContext);
-            const [score, setScore] = useState(''); // Start empty
+            const [score, setScore] = useState(''); 
             const [hasFreeze, setHasFreeze] = useState(false);
             const [hasSecondChance, setHasSecondChance] = useState(false);
 
-            // Optimierte Nummerneingabe
             const handleNumber = (num) => {
                 setScore(prev => {
-                    // Wenn vorher "0" war oder leer, ersetze es durch die neue Zahl (verhindert "0100")
                     if (prev === '0' || prev === '') return num;
                     return prev + num;
                 });
@@ -745,10 +747,27 @@
                 });
                 setPlayers(updatedPlayers);
 
-                const player = updatedPlayers.find(p => p.id === playerId);
-                if (player.score >= targetScore) {
-                    setWinner(player);
-                    setAppState('finished');
+                // --- NEUE WINNER LOGIK (Fair Play: Erst am Rundenende prüfen) ---
+                
+                // 1. Maximale Rundenanzahl ermitteln (wo steht der Führende?)
+                const maxHistoryLength = Math.max(...updatedPlayers.map(p => p.history.length));
+                
+                // 2. Prüfen, ob ALLE Spieler diese Rundenanzahl erreicht haben
+                const isRoundComplete = updatedPlayers.every(p => p.history.length === maxHistoryLength);
+
+                if (isRoundComplete) {
+                    // 3. Wenn die Runde vorbei ist, prüfen wir, ob jemand das Ziel erreicht hat
+                    const potentialWinners = updatedPlayers.filter(p => p.score >= targetScore);
+
+                    if (potentialWinners.length > 0) {
+                        // 4. Den mit den meisten Punkten als Sieger küren (bei Gleichstand gewinnt der erste in der Liste - vereinfacht)
+                        const actualWinner = potentialWinners.reduce((prev, current) => 
+                            (prev.score > current.score) ? prev : current
+                        );
+                        
+                        setWinner(actualWinner);
+                        setAppState('finished');
+                    }
                 }
             };
 
